@@ -121,6 +121,24 @@ func pathToken(b *GitlabBackend) []*framework.Path {
 			HelpSynopsis:    pathTokenHelpSyn,
 			HelpDescription: pathTokenHelpDesc,
 		},
+		{
+			Pattern: "dynamic/project_id/(?P<id>\\d+)/name/(?P<name>[^/]+)",
+			Fields: accessTokenSchema,
+			ExistenceCheck: b.pathTokenExistenceCheck(),
+			Operations: map[logical.Operation]framework.OperationHandler{
+				logical.CreateOperation: &framework.PathOperation{
+
+					Callback: b.pathTokenCreate,
+					Summary:  "Create a project access token",
+					Examples: flatTokenExamples,
+				},
+				logical.UpdateOperation: &framework.PathOperation{
+					Callback: b.pathTokenCreate,
+				},
+			},
+			HelpSynopsis:    "Create a project access token using path for project id and name",
+			HelpDescription: "This path allows you to create or update a GitLab token using the project ID and token name.",
+		},
 	}
 
 	return paths
@@ -138,6 +156,15 @@ var tokenExamples = []framework.RequestExample{
 		Data: map[string]interface{}{
 			"id":     1,
 			"name":   "MyProjectAccessToken",
+			"scopes": []string{"read_api", "read_repository"},
+		},
+	},
+}
+
+var flatTokenExamples = []framework.RequestExample{
+	{
+		Description: "Create a project access token using path for project id and name, ex: dynamic/project_id/1/name/MyProjectAccessToken",
+		Data: map[string]interface{}{
 			"scopes": []string{"read_api", "read_repository"},
 		},
 	},
